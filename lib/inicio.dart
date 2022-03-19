@@ -10,6 +10,10 @@ class Inicio extends StatefulWidget {
 
 class _InicioState extends State<Inicio> {
 
+  var _listaCategoria = ["Albañil","Carpintero","Etc"];
+  String _categoriaLabel = "Seleccione una categoría";
+  String _subCategoriaLabel = "Seleccione una sub-categoría";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,13 +29,56 @@ class _InicioState extends State<Inicio> {
                   width: MediaQuery.of(context).size.width/2,
                   height: 200,
                   ),
+                ), //Imagen de la empresa
+                Padding(
+                  padding: EdgeInsets.only(top:50),
                 ),
-                RaisedButton(
-                  shape: CircleBorder(), 
-                  onPressed: () {  },
-                  color: Colors.red,
-                  child: Text("Buscar"), //Icon(Icons.search, color: Colors.black87,),
+                Container(
+                  child: Stack(
+                    children: [
+                      Column(
+                        children: [
+                          DropdownButton(
+                            items: _listaCategoria.map((String e){
+                              return DropdownMenuItem(
+                                child: Text(e),
+                                value: e,
+                              );
+                            }).toList(), 
+                            hint: Text(_categoriaLabel),
+                            onChanged: (_value) => {
+                              setState((){
+                                _categoriaLabel = _value.toString();
+                              })
+                            }
+                          ),
+                          DropdownButton(
+                            items: null, 
+                            hint: Text(_subCategoriaLabel),
+                            onChanged: (_value) => {
+                              setState((){
+                                _subCategoriaLabel = _value.toString();
+                              })
+                            }
+                          ),
+                          TextField(
+                            decoration: InputDecoration(),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),//Inputs
+                Padding(
+                  padding: EdgeInsets.only(top:30),
                 ),
+                RaisedButton.icon(
+                  //shape: CircleBorder(), 
+                  onPressed: () { print("Apreto el boton"); },
+                  color: Colors.green[600],
+                  icon: Icon(Icons.search, color: Colors.white,),
+                  label: Text("Buscar", style: TextStyle(color: Colors.white,fontSize: 21),), //Icon(Icons.search, color: Colors.black87,),
+                ) //Botón de busqueda,
               ],
             ),
           ],
