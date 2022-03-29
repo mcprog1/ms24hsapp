@@ -1,9 +1,9 @@
 class Categorias {
-  late int idCategoria;
-  late String nombreCategoria;
-  late String urlImagen;
-  late int tipoCategoria;
-  late String vigente;
+  int idCategoria;
+  String nombreCategoria;
+  String urlImagen;
+  int tipoCategoria;
+  String vigente;
 
   Categorias(
       {required this.idCategoria,
@@ -11,14 +11,6 @@ class Categorias {
       required this.urlImagen,
       required this.tipoCategoria,
       required this.vigente});
-
-  Categorias.fromJson(Map<String, dynamic> json) {
-    idCategoria = json['idCategoria'];
-    nombreCategoria = json['nombreCategoria'];
-    urlImagen = json['urlImagen'];
-    tipoCategoria = json['tipoCategoria'];
-    vigente = json['vigente'];
-  }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
