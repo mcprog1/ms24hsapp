@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import "package:http/http.dart" as http;
+import 'package:ms24hs/models/subCategorias.dart';
 import "varglobal.dart" as global;
 import "models/categorias.dart";
+import 'provider/splashScree.dart' as splash;
 
 import "inicio.dart";
 
@@ -24,16 +26,30 @@ class MyApp extends StatelessWidget {
       builder:
           (BuildContext context, AsyncSnapshot<List<Categorias>> snapshot) {
         if (snapshot.hasData && snapshot.data != []) {
-          return MaterialApp(
-            title: 'MS24HS',
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-            ),
-            home: Inicio(categoriasLista: snapshot.data!),
+          return FutureBuilder(
+            future: obtenerSubCategorias(snapshot.data![0]),
+            builder: (BuildContext context,
+                AsyncSnapshot<List<SubCategorias>> snapshotSub) {
+              if (snapshotSub.hasData && snapshotSub.data != []) {
+                print(snapshotSub.data![0].subcatNombre);
+                return MaterialApp(
+                  title: 'MS24HS',
+                  debugShowCheckedModeBanner: false,
+                  theme: ThemeData(
+                    primarySwatch: Colors.blue,
+                  ),
+                  home: Inicio(
+                      categoriasLista: snapshot.data!,
+                      subCategoriaLista: snapshotSub.data!),
+                );
+              } else {
+                return splash.Splash().splash(context);
+              }
+            },
           );
         } else {
-          return Center(child: CircularProgressIndicator());
+          return splash.Splash().splash(context);
+          //Center(child: CircularProgressIndicator());
         }
       },
     );
@@ -63,6 +79,17 @@ class MyApp extends StatelessWidget {
       }
       return data;
     });
+    return data;
+  }
+
+  Future<List<SubCategorias>> obtenerSubCategorias(Categorias categoria) async {
+    List<SubCategorias> data = [];
+    data.add(SubCategorias(
+        subcatCatId: 0,
+        subcatId: 0,
+        subcatNombre: "Seleccione una sub categorias",
+        subcatVigente: ""));
+
     return data;
   }
 }

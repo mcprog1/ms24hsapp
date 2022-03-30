@@ -13,8 +13,12 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 
 class Inicio extends StatefulWidget {
   final List<Categorias> categoriasLista;
-
-  const Inicio({Key? key, required this.categoriasLista}) : super(key: key);
+  final List<SubCategorias> subCategoriaLista;
+  const Inicio(
+      {Key? key,
+      required this.categoriasLista,
+      required this.subCategoriaLista})
+      : super(key: key);
 
   @override
   State<Inicio> createState() => _InicioState();
@@ -35,12 +39,8 @@ class _InicioState extends State<Inicio> {
     super.initState();
     _catVal = widget.categoriasLista[0];
     catList = widget.categoriasLista;
-    subCatList.add(SubCategorias(
-        subcatId: 0,
-        subcatCatId: 0,
-        subcatNombre: "Seleccione una categorias"));
-    _subCatVal = subCatList[0];
-    obtenerSubCategoria(_catVal!.idCategoria);
+    subCatList = widget.subCategoriaLista;
+    _subCatVal = widget.subCategoriaLista[0];
   }
 
   @override
@@ -85,11 +85,11 @@ class _InicioState extends State<Inicio> {
                   value: _catVal,
                 ),
               ), //Categorias
-              /* Container(
+              Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 margin: EdgeInsets.all(10),
                 child: DropdownButton(
-                  items: subCatList?.map((SubCategorias item) {
+                  items: subCatList.map((SubCategorias item) {
                     return DropdownMenuItem(
                       child: Text(item.subcatNombre,
                           style: TextStyle(fontSize: 13)),
@@ -103,7 +103,7 @@ class _InicioState extends State<Inicio> {
                   },
                   value: _subCatVal,
                 ),
-              ), //Sub categorias*/
+              ), //Sub categorias
               Container(
                 child: Stack(
                   children: [
