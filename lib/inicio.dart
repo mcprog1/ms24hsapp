@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:convert';
 import 'dart:async';
 
@@ -5,11 +7,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import "package:http/http.dart" as http;
+import 'package:ms24hs/buscador.dart';
 import "varglobal.dart" as global;
 import 'provider/modal.dart' as modales;
+import 'provider/splashScree.dart' as splash;
 import "models/categorias.dart";
 import "models/subCategorias.dart";
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'models/busqueda.dart';
+import 'package:google_place/google_place.dart' as google;
+import 'package:location/location.dart';
 
 class Inicio extends StatefulWidget {
   final List<Categorias> categoriasLista;
@@ -34,6 +41,41 @@ class _InicioState extends State<Inicio> {
 
   bool esProf = false;
 
+  /**Para obtener la ubicacion */
+  Location location = new Location();
+
+  bool _serviceEnabled = false;
+  PermissionStatus _permissionGranted = PermissionStatus.granted;
+  LocationData _locationData = LocationData.fromMap({});
+
+  google.GooglePlace googlePlace = google.GooglePlace(global.googleKey);
+  List<google.AutocompletePrediction> predictions = [];
+
+  void getLocation() async {
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
+
+    print(_locationData.latitude);
+    print(_locationData.longitude);
+
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +96,11 @@ class _InicioState extends State<Inicio> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              RaisedButton(
+                  onPressed: () {
+                    getLocation();
+                  },
+                  child: const Text("Obtener posicion")),
               Center(
                 child: Image.asset(
                   "assets/img/logo-sos.png",
@@ -67,11 +114,14 @@ class _InicioState extends State<Inicio> {
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                margin: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(
+                    bottom: 10, top: 10, left: 30, right: 30),
                 child: DropdownButton(
+                  isExpanded: true,
                   items: catList.map((Categorias item) {
                     return DropdownMenuItem(
                       child: Text(item.nombreCategoria,
+                          overflow: TextOverflow.clip,
                           style: const TextStyle(fontSize: 13)),
                       value: item,
                     );
@@ -86,13 +136,17 @@ class _InicioState extends State<Inicio> {
                 ),
               ), //Categorias
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                margin: EdgeInsets.all(10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                margin: const EdgeInsets.only(
+                    bottom: 10, top: 10, left: 30, right: 30),
                 child: DropdownButton(
+                  isExpanded: true,
                   items: subCatList.map((SubCategorias item) {
                     return DropdownMenuItem(
                       child: Text(item.subcatNombre,
-                          style: TextStyle(fontSize: 13)),
+                          overflow: TextOverflow.clip,
+                          style: const TextStyle(fontSize: 13)),
                       value: item,
                     );
                   }).toList(),
@@ -103,35 +157,63 @@ class _InicioState extends State<Inicio> {
                   },
                   value: _subCatVal,
                 ),
-              ), //Sub categorias
+              ),
+              //Sub categorias
               Container(
                 child: Stack(
                   children: [
                     Column(
+                      mainAxisSize: MainAxisSize.min,
+                      // ignore: prefer_const_literals_to_create_immutables
                       children: [
+                        // ignore: prefer_const_constructors
                         Padding(
-                          padding: EdgeInsets.only(
-                              left: MediaQuery.of(context).size.width / 4.1,
-                              right: MediaQuery.of(context).size.width / 4.1),
+                          padding: const EdgeInsets.only(
+                              bottom: 10, top: 10, left: 40, right: 40),
                           // ignore: prefer_const_constructors
                           child: TextField(
+                            autofocus: false,
                             // ignore: prefer_const_constructors
                             decoration: InputDecoration(
                                 hintText: "Ingrese su localidad"),
+                            onChanged: (value) {
+                              if (value
+                                  .isNotEmpty) //Si no esta vacio hago lo siguiente
+                              {
+                                autoCompleteSearch(value);
+                              } else {
+                                if (predictions.length > 0 && mounted) {
+                                  setState(() {
+                                    predictions = [];
+                                  });
+                                }
+                              }
+                            },
                           ),
-                        )
+                        ), //Fin del input de la localidad
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        /*  ListView.builder(
+                            itemCount: predictions.length,
+                            itemBuilder: (context, index) {
+                              return ListTile();
+                            }),*/
                       ],
                     )
                   ],
                 ),
               ), //Inputs
+
               const Padding(
                 padding: const EdgeInsets.only(top: 30),
               ),
               RaisedButton.icon(
+                padding: const EdgeInsets.fromLTRB(50, 0, 50, 0),
                 //shape: CircleBorder(),
-                onPressed: () {
-                  print("Apreto el boton");
+                onPressed: () async {
+                  Busqueda resultado = await obtenerBusqueda();
                 },
                 color: Colors.green[600],
                 icon: const Icon(
@@ -143,15 +225,11 @@ class _InicioState extends State<Inicio> {
                   style: TextStyle(color: Colors.white, fontSize: 21),
                 ), //Icon(Icons.search, color: Colors.black87,),
               ), //Botón de busqueda,
-              /*Padding(
-                padding: EdgeInsets.only(
-                    left: MediaQuery.of(context).size.width / 2.4,
-                    right: MediaQuery.of(context).size.width / 2.4),
-                child: Expanded(
-                    child: Divider(
-                  color: Colors.black87,
-                )), 
-              ),*/
+              const Divider(
+                indent: 75,
+                endIndent: 75,
+                color: Colors.black87,
+              ),
               const Padding(padding: const EdgeInsets.only(top: 10)),
               ElevatedButton(
                   onPressed: () =>
@@ -173,12 +251,45 @@ class _InicioState extends State<Inicio> {
     ));
   }
 
-  Alert modalLoginRegistro(BuildContext context, String tipo) {
-    return Alert(context: context, title: "Prueba");
+  void autoCompleteSearch(String value) async {
+    var result = await googlePlace.autocomplete.get(value);
+    if (result != null && result.predictions != null && mounted) {
+      setState(() {
+        predictions = result.predictions!;
+      });
+      print(result.predictions![0].description);
+    }
+  }
+
+  Future<Busqueda> obtenerBusqueda() async {
+    Busqueda data = Busqueda(codigo: 1000, datosBusqueda: []);
+    String idCategoria = _catVal!.idCategoria.toString();
+    String idSubCategoria = _subCatVal!.subcatId.toString();
+    if (idSubCategoria == "0") {
+      idSubCategoria = "-";
+    }
+    Uri url = Uri.https(
+        global.baseUrl,
+        global.project + global.wsUrl + "ws/buscar",
+        {"c": idCategoria, "sc": idSubCategoria});
+    await http
+        .get(url, headers: {"Accept": "application/json"}).then((respuesta) {
+      String body = utf8.decode(respuesta.bodyBytes);
+      var datos = jsonDecode(body);
+      data = Busqueda.fromJson(datos);
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => Buscador(busqueda: data)));
+    });
+    return data;
   }
 
   Future<String> obtenerSubCategoria(int idCategoria) async {
     List<SubCategorias> subCat = [];
+    subCat.add(SubCategorias(
+        subcatCatId: 0,
+        subcatId: 0,
+        subcatNombre: "Seleccione una sub categorias",
+        subcatVigente: ""));
     Uri url = Uri.https(
         global.baseUrl,
         global.project + global.wsUrl + "ws/subCategoria/obtener",
@@ -196,6 +307,7 @@ class _InicioState extends State<Inicio> {
       print(subCat.length);
       setState(() {
         subCatList = subCat;
+        _subCatVal = subCatList[0];
       });
     });
     return "Ok";
@@ -230,37 +342,38 @@ class _InicioState extends State<Inicio> {
             });
           },
         ),
-        TextField(
-            decoration: InputDecoration(
+        const TextField(
+            decoration: const InputDecoration(
           hintText: "Nombre",
         )),
-        TextField(decoration: InputDecoration(hintText: "Apellido")),
-        TextField(decoration: InputDecoration(hintText: "Cod cel")),
-        TextField(
-            decoration: InputDecoration(
-                hintText: "Numero de celular", icon: Icon(Icons.numbers))),
-        TextField(
-            decoration: InputDecoration(
-                hintText: "Correo electronico", icon: Icon(Icons.email))),
-        TextField(
-            decoration:
-                InputDecoration(hintText: "Clave", icon: Icon(Icons.lock))),
-        TextField(
-          decoration: InputDecoration(
-              hintText: "Confirmar clave", icon: Icon(Icons.lock)),
+        const TextField(decoration: InputDecoration(hintText: "Apellido")),
+        const TextField(decoration: const InputDecoration(hintText: "Cod cel")),
+        const TextField(
+            decoration: const InputDecoration(
+                hintText: "Numero de celular",
+                icon: const Icon(Icons.numbers))),
+        const TextField(
+            decoration: const InputDecoration(
+                hintText: "Correo electronico", icon: const Icon(Icons.email))),
+        const TextField(
+            decoration: const InputDecoration(
+                hintText: "Clave", icon: const Icon(Icons.lock))),
+        const TextField(
+          decoration: const InputDecoration(
+              hintText: "Confirmar clave", icon: const Icon(Icons.lock)),
         ),
       ],
     );
     DialogButton cancelar = DialogButton(
       onPressed: () => Navigator.pop(context),
-      child: Text(
+      child: const Text(
         "Cancelar",
-        style: TextStyle(color: Colors.white, fontSize: 20),
+        style: const TextStyle(color: Colors.white, fontSize: 20),
       ),
     );
     DialogButton accionBoton = DialogButton(
       onPressed: () => Navigator.pop(context),
-      child: Text(
+      child: const Text(
         "Registrarse",
         style: TextStyle(color: Colors.white, fontSize: 20),
       ),
@@ -269,19 +382,20 @@ class _InicioState extends State<Inicio> {
     if (tipo == "L") {
       accionBoton = DialogButton(
         onPressed: () => Navigator.pop(context),
-        child: Text(
+        child: const Text(
           "Iniciar sesion",
           style: TextStyle(color: Colors.white, fontSize: 20),
         ),
       );
       contenido = Column(
         children: [
-          TextField(
-              decoration: InputDecoration(
-                  hintText: "Correo electronico", icon: Icon(Icons.email))),
-          TextField(
-              decoration:
-                  InputDecoration(hintText: "Clave", icon: Icon(Icons.lock))),
+          const TextField(
+              decoration: const InputDecoration(
+                  hintText: "Correo electronico",
+                  icon: const Icon(Icons.email))),
+          const TextField(
+              decoration: const InputDecoration(
+                  hintText: "Clave", icon: Icon(Icons.lock))),
         ],
       );
     }

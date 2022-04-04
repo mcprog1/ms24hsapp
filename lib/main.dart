@@ -6,8 +6,8 @@ import 'package:ms24hs/models/subCategorias.dart';
 import "varglobal.dart" as global;
 import "models/categorias.dart";
 import 'provider/splashScree.dart' as splash;
-
 import "inicio.dart";
+import 'buscador.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,6 +41,9 @@ class MyApp extends StatelessWidget {
                   home: Inicio(
                       categoriasLista: snapshot.data!,
                       subCategoriaLista: snapshotSub.data!),
+                  /*initialRoute: "/",
+                      routes: {
+                      },*/
                 );
               } else {
                 return splash.Splash().splash(context);
@@ -89,7 +92,21 @@ class MyApp extends StatelessWidget {
         subcatId: 0,
         subcatNombre: "Seleccione una sub categorias",
         subcatVigente: ""));
-
+    Uri url = Uri.https(
+        global.baseUrl,
+        global.project + global.wsUrl + "ws/subCategoria/obtener",
+        {"idCategoria": categoria.idCategoria.toString()});
+    await http
+        .get(url, headers: {"Accept": "application/json"}).then((respuesta) {
+      String body = utf8.decode(respuesta.bodyBytes);
+      var datos = jsonDecode(body);
+      for (var item in datos) {
+        data.add(SubCategorias(
+            subcatId: item["subcat_id"],
+            subcatCatId: item["subcat_cat_id"],
+            subcatNombre: item["subcat_nombre"]));
+      }
+    });
     return data;
   }
 }
