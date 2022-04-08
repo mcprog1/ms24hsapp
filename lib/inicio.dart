@@ -7,7 +7,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import "package:http/http.dart" as http;
+import 'package:ms24hs/address_search.dart';
 import 'package:ms24hs/buscador.dart';
+import 'package:ms24hs/service/google_places.dart';
+import 'package:uuid/uuid.dart';
 import "varglobal.dart" as global;
 import 'provider/modal.dart' as modales;
 import 'provider/splashScree.dart' as splash;
@@ -17,6 +20,7 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'models/busqueda.dart';
 import 'package:google_place/google_place.dart' as google;
 import 'package:location/location.dart';
+import 'provider/adressInput.dart';
 
 class Inicio extends StatefulWidget {
   final List<Categorias> categoriasLista;
@@ -32,6 +36,8 @@ class Inicio extends StatefulWidget {
 }
 
 class _InicioState extends State<Inicio> {
+  final _localidadController = TextEditingController();
+
   String _subCategoriaLabel = "Seleccione una sub-categoría";
   String _subCategoria = "Seleccione una categoría";
   Categorias? _catVal;
@@ -52,6 +58,7 @@ class _InicioState extends State<Inicio> {
   List<google.AutocompletePrediction> predictions = [];
 
   void getLocation() async {
+    final sessionToken = Uuid().v4();
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
@@ -70,19 +77,61 @@ class _InicioState extends State<Inicio> {
 
     _locationData = await location.getLocation();
 
-    print(_locationData.latitude);
-    print(_locationData.longitude);
+    PlaceApiProvider a = AddresSearch(sessionToken).currentLocation(
+        _locationData.latitude.toString(), _locationData.longitude.toString());
+    String nombreLocalizacion = await a
+        .getCurrentLocation(_locationData.latitude.toString(),
+            _locationData.longitude.toString())
+        .then((String val) {
+      return val;
+    });
 
-    setState(() {});
+    setState(() {
+      global.latMovil = _locationData.latitude.toString();
+      global.longMovil = _locationData.longitude.toString();
+      _localidadController.text = nombreLocalizacion;
+    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _localidadController.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+    getLocation();
     _catVal = widget.categoriasLista[0];
     catList = widget.categoriasLista;
     subCatList = widget.subCategoriaLista;
     _subCatVal = widget.subCategoriaLista[0];
+  }
+
+  searchLoc() async {
+    final sessionToken = Uuid().v4();
+    final Suggestion? result = await showSearch(
+      context: context,
+      delegate: AddresSearch(sessionToken),
+    );
+
+    if (result != null) {
+      String lat = "";
+      String long = "";
+      PlaceApiProvider a =
+          AddresSearch(sessionToken).PlaceDetail(result.placeId);
+      await a.getPlaceDetailFromId(result.placeId).then((Place val) {
+        lat = val.lat;
+        long = val.long;
+      });
+      setState(() {
+        _localidadController.text = result.description;
+        global.latMovil = lat;
+        global.longMovil = long;
+      });
+    }
   }
 
   @override
@@ -96,11 +145,6 @@ class _InicioState extends State<Inicio> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              RaisedButton(
-                  onPressed: () {
-                    getLocation();
-                  },
-                  child: const Text("Obtener posicion")),
               Center(
                 child: Image.asset(
                   "assets/img/logo-sos.png",
@@ -171,35 +215,17 @@ class _InicioState extends State<Inicio> {
                           padding: const EdgeInsets.only(
                               bottom: 10, top: 10, left: 40, right: 40),
                           // ignore: prefer_const_constructors
-                          child: TextField(
-                            autofocus: false,
-                            // ignore: prefer_const_constructors
-                            decoration: InputDecoration(
-                                hintText: "Ingrese su localidad"),
-                            onChanged: (value) {
-                              if (value
-                                  .isNotEmpty) //Si no esta vacio hago lo siguiente
-                              {
-                                autoCompleteSearch(value);
-                              } else {
-                                if (predictions.length > 0 && mounted) {
-                                  setState(() {
-                                    predictions = [];
-                                  });
-                                }
-                              }
-                            },
+                          child: AdressInput(
+                            controller: _localidadController,
+                            enabled: true,
+                            hintText: "Localidad",
+                            iconData: Icons.gps_fixed,
+                            onTap: searchLoc,
                           ),
                         ), //Fin del input de la localidad
                         const SizedBox(
                           height: 15,
                         ),
-
-                        /*  ListView.builder(
-                            itemCount: predictions.length,
-                            itemBuilder: (context, index) {
-                              return ListTile();
-                            }),*/
                       ],
                     )
                   ],
@@ -257,7 +283,6 @@ class _InicioState extends State<Inicio> {
       setState(() {
         predictions = result.predictions!;
       });
-      print(result.predictions![0].description);
     }
   }
 
@@ -304,7 +329,6 @@ class _InicioState extends State<Inicio> {
             subcatCatId: item["subcat_cat_id"],
             subcatNombre: item["subcat_nombre"]));
       }
-      print(subCat.length);
       setState(() {
         subCatList = subCat;
         _subCatVal = subCatList[0];

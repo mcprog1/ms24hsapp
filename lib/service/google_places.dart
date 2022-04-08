@@ -2,30 +2,27 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart';
+import 'package:ms24hs/varglobal.dart' as global;
+import 'package:flutter/src/widgets/framework.dart';
 
 class Place {
-  String streetNumber;
-  String street;
-  String city;
-  String zipCode;
+  String long;
+  String lat;
 
   Place({
-    required this.streetNumber,
-    required this.street,
-    required this.city,
-    required this.zipCode,
+    required this.long,
+    required this.lat,
   });
 
   @override
   String toString() {
-    return 'Place(streetNumber: $streetNumber, street: $street, city: $city, zipCode: $zipCode)';
+    return 'Place(streetNumber: $lat, street: $long)';
   }
 }
 
 class Suggestion {
   final String placeId;
   final String description;
-
   Suggestion(this.placeId, this.description);
 
   @override
@@ -41,17 +38,17 @@ class PlaceApiProvider {
 
   final sessionToken;
 
-  static final String androidKey = 'YOUR_API_KEY_HERE';
-  static final String iosKey = 'YOUR_API_KEY_HERE';
+  static const String androidKey = 'AIzaSyCSRyd6_fhcAKO0-WocoGv_G7Wq0AJxBCc';
+  static const String iosKey = 'AIzaSyCSRyd6_fhcAKO0-WocoGv_G7Wq0AJxBCc';
   final apiKey = Platform.isAndroid ? androidKey : iosKey;
 
   Future<List<Suggestion>> fetchSuggestions(String input) async {
     Uri request =
         Uri.https("maps.googleapis.com", "maps/api/place/autocomplete/json", {
       "input": input,
-      "type": "address",
-      "language": "es-Es",
-      "components": "country:ch",
+      "type": "geocode",
+      // "language": "es-Es",
+      // "components": "country:ch",
       "key": apiKey,
       "sessiontoken": sessionToken
     });
@@ -74,11 +71,38 @@ class PlaceApiProvider {
     }
   }
 
+  Future<String> getCurrentLocation(String lat, String long) async {
+    Uri request = Uri.https("maps.googleapis.com", "maps/api/geocode/json", {
+      "latlng": lat + "," + long,
+      "key": apiKey,
+      "sessiontoken": sessionToken
+    });
+    final response = await client.get(request);
+    String loc = "";
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      if (result['status'] == 'OK') {
+        loc = result['plus_code']["compound_code"];
+        return loc;
+        // compose suggestions in a list
+        /* return result['predictions']
+            .map<Suggestion>((p) => Suggestion(p['place_id'], p['description']))
+            .toList();*/
+      }
+      if (result['status'] == 'ZERO_RESULTS') {
+        return "";
+      }
+      throw Exception(result['error_message']);
+    } else {
+      throw Exception('Failed to fetch suggestion');
+    }
+  }
+
   Future<Place> getPlaceDetailFromId(String placeId) async {
     Uri request =
         Uri.https("maps.googleapis.com", "maps/api/place/details/json", {
       "place_id": placeId,
-      "fields": "address_component",
+      "fields": "geometry",
       "key": apiKey,
       "sessiontoken": sessionToken
     });
@@ -87,26 +111,10 @@ class PlaceApiProvider {
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
       if (result['status'] == 'OK') {
-        final components =
-            result['result']['address_components'] as List<dynamic>;
-        // build result
-        final place =
-            Place(city: "", street: "", streetNumber: "", zipCode: "");
-        components.forEach((c) {
-          final List type = c['types'];
-          if (type.contains('street_number')) {
-            place.streetNumber = c['long_name'];
-          }
-          if (type.contains('route')) {
-            place.street = c['long_name'];
-          }
-          if (type.contains('locality')) {
-            place.city = c['long_name'];
-          }
-          if (type.contains('postal_code')) {
-            place.zipCode = c['long_name'];
-          }
-        });
+        final place = Place(
+            lat: result['result']["geometry"]["location"]["lat"].toString(),
+            long: result['result']["geometry"]["location"]["lng"].toString());
+
         return place;
       }
       throw Exception(result['error_message']);

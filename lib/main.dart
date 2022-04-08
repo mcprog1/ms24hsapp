@@ -31,7 +31,6 @@ class MyApp extends StatelessWidget {
             builder: (BuildContext context,
                 AsyncSnapshot<List<SubCategorias>> snapshotSub) {
               if (snapshotSub.hasData && snapshotSub.data != []) {
-                print(snapshotSub.data![0].subcatNombre);
                 return MaterialApp(
                   title: 'MS24HS',
                   debugShowCheckedModeBanner: false,

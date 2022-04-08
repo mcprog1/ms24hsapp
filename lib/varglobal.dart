@@ -22,3 +22,6 @@ Color fondoGris = Color.fromARGB(72, 222, 217, 217);
 
 /** API KEY */
 String googleKey = "AIzaSyCSRyd6_fhcAKO0-WocoGv_G7Wq0AJxBCc";
+
+String latMovil = "";
+String longMovil = "";
