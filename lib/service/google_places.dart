@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart';
-import 'package:ms24hs/varglobal.dart' as global;
-import 'package:flutter/src/widgets/framework.dart';
 
 class Place {
   String long;
@@ -47,7 +45,7 @@ class PlaceApiProvider {
         Uri.https("maps.googleapis.com", "maps/api/place/autocomplete/json", {
       "input": input,
       "type": "geocode",
-      // "language": "es-Es",
+      "language": "es-Es",
       // "components": "country:ch",
       "key": apiKey,
       "sessiontoken": sessionToken
@@ -75,6 +73,7 @@ class PlaceApiProvider {
     Uri request = Uri.https("maps.googleapis.com", "maps/api/geocode/json", {
       "latlng": lat + "," + long,
       "key": apiKey,
+      "language": "es-Es",
       "sessiontoken": sessionToken
     });
     final response = await client.get(request);
@@ -84,10 +83,6 @@ class PlaceApiProvider {
       if (result['status'] == 'OK') {
         loc = result['plus_code']["compound_code"];
         return loc;
-        // compose suggestions in a list
-        /* return result['predictions']
-            .map<Suggestion>((p) => Suggestion(p['place_id'], p['description']))
-            .toList();*/
       }
       if (result['status'] == 'ZERO_RESULTS') {
         return "";
@@ -104,6 +99,7 @@ class PlaceApiProvider {
       "place_id": placeId,
       "fields": "geometry",
       "key": apiKey,
+      "language": "es-Es",
       "sessiontoken": sessionToken
     });
     final response = await client.get(request);

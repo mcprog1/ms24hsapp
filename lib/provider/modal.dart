@@ -94,4 +94,6 @@ class Modales {
         content: contenido,
         buttons: [accionBoton, cancelar]);
   }*/
+ 
+
 }

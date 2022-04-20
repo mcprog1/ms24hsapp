@@ -21,6 +21,12 @@ import 'models/busqueda.dart';
 import 'package:google_place/google_place.dart' as google;
 import 'package:location/location.dart';
 import 'provider/adressInput.dart';
+import 'service/webService.dart' as webService;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'models/usuario.dart';
+import 'service/sharedPreferences.dart';
+import 'provider/appBar.dart';
+import 'agenda.dart';
 
 class Inicio extends StatefulWidget {
   final List<Categorias> categoriasLista;
@@ -36,7 +42,10 @@ class Inicio extends StatefulWidget {
 }
 
 class _InicioState extends State<Inicio> {
+  /** CONTROLLER */
   final _localidadController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _claveController = TextEditingController();
 
   String _subCategoriaLabel = "Seleccione una sub-categoría";
   String _subCategoria = "Seleccione una categoría";
@@ -44,8 +53,8 @@ class _InicioState extends State<Inicio> {
   SubCategorias? _subCatVal;
   List<Categorias> catList = [];
   List<SubCategorias> subCatList = [];
-
   bool esProf = false;
+  bool _login = false;
 
   /**Para obtener la ubicacion */
   Location location = new Location();
@@ -108,6 +117,7 @@ class _InicioState extends State<Inicio> {
     catList = widget.categoriasLista;
     subCatList = widget.subCategoriaLista;
     _subCatVal = widget.subCategoriaLista[0];
+    cargarDatosUsuario();
   }
 
   searchLoc() async {
@@ -137,144 +147,152 @@ class _InicioState extends State<Inicio> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: appBarMenu(),
+        drawer: menuLateral(),
         body: Container(
-      padding: const EdgeInsets.only(left: 10, right: 10),
-      color: Colors.yellow[600],
-      child: Stack(
-        children: <Widget>[
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Center(
-                child: Image.asset(
-                  "assets/img/logo-sos.png",
-                  width: MediaQuery.of(context).size.width / 2,
-                  height: 200,
-                ),
-              ), //Imagen de la empresa
-              const Padding(
-                padding: const EdgeInsets.only(top: 10),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                margin: const EdgeInsets.only(
-                    bottom: 10, top: 10, left: 30, right: 30),
-                child: DropdownButton(
-                  isExpanded: true,
-                  items: catList.map((Categorias item) {
-                    return DropdownMenuItem(
-                      child: Text(item.nombreCategoria,
-                          overflow: TextOverflow.clip,
-                          style: const TextStyle(fontSize: 13)),
-                      value: item,
-                    );
-                  }).toList(),
-                  onChanged: (Categorias? c) {
-                    setState(() {
-                      obtenerSubCategoria(c!.idCategoria);
-                      _catVal = c;
-                    });
-                  },
-                  value: _catVal,
-                ),
-              ), //Categorias
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                margin: const EdgeInsets.only(
-                    bottom: 10, top: 10, left: 30, right: 30),
-                child: DropdownButton(
-                  isExpanded: true,
-                  items: subCatList.map((SubCategorias item) {
-                    return DropdownMenuItem(
-                      child: Text(item.subcatNombre,
-                          overflow: TextOverflow.clip,
-                          style: const TextStyle(fontSize: 13)),
-                      value: item,
-                    );
-                  }).toList(),
-                  onChanged: (SubCategorias? c) {
-                    setState(() {
-                      _subCatVal = c;
-                    });
-                  },
-                  value: _subCatVal,
-                ),
-              ),
-              //Sub categorias
-              Container(
-                child: Stack(
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      // ignore: prefer_const_literals_to_create_immutables
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          color: global.colorFondo,
+          child: Stack(
+            children: <Widget>[
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Image.asset(
+                      "assets/img/logo-sos.png",
+                      width: MediaQuery.of(context).size.width / 2,
+                      height: 200,
+                    ),
+                  ), //Imagen de la empresa
+                  const Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    margin: const EdgeInsets.only(
+                        bottom: 10, top: 10, left: 30, right: 30),
+                    child: DropdownButton(
+                      isExpanded: true,
+                      items: catList.map((Categorias item) {
+                        return DropdownMenuItem(
+                          child: Text(item.nombreCategoria,
+                              overflow: TextOverflow.clip,
+                              style: const TextStyle(fontSize: 13)),
+                          value: item,
+                        );
+                      }).toList(),
+                      onChanged: (Categorias? c) {
+                        setState(() {
+                          obtenerSubCategoria(c!.idCategoria);
+                          _catVal = c;
+                        });
+                      },
+                      value: _catVal,
+                    ),
+                  ), //Categorias
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    margin: const EdgeInsets.only(
+                        bottom: 10, top: 10, left: 30, right: 30),
+                    child: DropdownButton(
+                      isExpanded: true,
+                      items: subCatList.map((SubCategorias item) {
+                        return DropdownMenuItem(
+                          child: Text(item.subcatNombre,
+                              overflow: TextOverflow.clip,
+                              style: const TextStyle(fontSize: 13)),
+                          value: item,
+                        );
+                      }).toList(),
+                      onChanged: (SubCategorias? c) {
+                        setState(() {
+                          _subCatVal = c;
+                        });
+                      },
+                      value: _subCatVal,
+                    ),
+                  ),
+                  //Sub categorias
+                  Container(
+                    child: Stack(
                       children: [
-                        // ignore: prefer_const_constructors
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              bottom: 10, top: 10, left: 40, right: 40),
-                          // ignore: prefer_const_constructors
-                          child: AdressInput(
-                            controller: _localidadController,
-                            enabled: true,
-                            hintText: "Localidad",
-                            iconData: Icons.gps_fixed,
-                            onTap: searchLoc,
-                          ),
-                        ), //Fin del input de la localidad
-                        const SizedBox(
-                          height: 15,
-                        ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          // ignore: prefer_const_literals_to_create_immutables
+                          children: [
+                            // ignore: prefer_const_constructors
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: 10, top: 10, left: 40, right: 40),
+                              // ignore: prefer_const_constructors
+                              child: AdressInput(
+                                controller: _localidadController,
+                                enabled: true,
+                                hintText: "Localidad",
+                                iconData: Icons.gps_fixed,
+                                onTap: searchLoc,
+                              ),
+                            ), //Fin del input de la localidad
+                            const SizedBox(
+                              height: 15,
+                            ),
+                          ],
+                        )
                       ],
-                    )
-                  ],
-                ),
-              ), //Inputs
+                    ),
+                  ), //Inputs
 
-              const Padding(
-                padding: const EdgeInsets.only(top: 30),
+                  const Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                  ),
+                  RaisedButton.icon(
+                    padding: const EdgeInsets.fromLTRB(50, 0, 50, 0),
+                    //shape: CircleBorder(),
+                    onPressed: () async {
+                      Busqueda resultado = await obtenerBusqueda();
+                    },
+                    color: Colors.green[600],
+                    icon: const Icon(
+                      Icons.search,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      "Buscar",
+                      style: TextStyle(color: Colors.white, fontSize: 21),
+                    ), //Icon(Icons.search, color: Colors.black87,),
+                  ), //Botón de busqueda,
+                  if (!_login) ...[
+                    const Divider(
+                      indent: 75,
+                      endIndent: 75,
+                      color: Colors.black87,
+                    ),
+                    const Padding(padding: EdgeInsets.only(top: 10)),
+                    ElevatedButton(
+                        onPressed: () =>
+                            modalRegistroLogin(this.context, "L", esProf)
+                                .show(),
+                        child: const Text("Iniciar Sesion",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 21))),
+                    const Padding(padding: EdgeInsets.only(top: 10)),
+                    ElevatedButton(
+                      onPressed: () =>
+                          modalRegistroLogin(this.context, "R", esProf).show(),
+                      child: const Text("Crear cuenta",
+                          style: TextStyle(color: Colors.white, fontSize: 21)),
+                      style: const ButtonStyle(),
+                    )
+                  ] else ...[
+                    const Padding(padding: EdgeInsets.only(top: 80)),
+                  ]
+                ],
               ),
-              RaisedButton.icon(
-                padding: const EdgeInsets.fromLTRB(50, 0, 50, 0),
-                //shape: CircleBorder(),
-                onPressed: () async {
-                  Busqueda resultado = await obtenerBusqueda();
-                },
-                color: Colors.green[600],
-                icon: const Icon(
-                  Icons.search,
-                  color: Colors.white,
-                ),
-                label: const Text(
-                  "Buscar",
-                  style: TextStyle(color: Colors.white, fontSize: 21),
-                ), //Icon(Icons.search, color: Colors.black87,),
-              ), //Botón de busqueda,
-              const Divider(
-                indent: 75,
-                endIndent: 75,
-                color: Colors.black87,
-              ),
-              const Padding(padding: const EdgeInsets.only(top: 10)),
-              ElevatedButton(
-                  onPressed: () =>
-                      modalRegistroLogin(this.context, "L", esProf).show(),
-                  child: const Text("Iniciar Sesion",
-                      style: TextStyle(color: Colors.white, fontSize: 21))),
-              const Padding(padding: const EdgeInsets.only(top: 10)),
-              ElevatedButton(
-                onPressed: () =>
-                    modalRegistroLogin(this.context, "R", esProf).show(),
-                child: const Text("Crear cuenta",
-                    style: const TextStyle(color: Colors.white, fontSize: 21)),
-                style: const ButtonStyle(),
-              )
             ],
           ),
-        ],
-      ),
-    ));
+        ));
   }
 
   void autoCompleteSearch(String value) async {
@@ -290,13 +308,18 @@ class _InicioState extends State<Inicio> {
     Busqueda data = Busqueda(codigo: 1000, datosBusqueda: []);
     String idCategoria = _catVal!.idCategoria.toString();
     String idSubCategoria = _subCatVal!.subcatId.toString();
+    String localidad = _localidadController.text;
     if (idSubCategoria == "0") {
       idSubCategoria = "-";
     }
-    Uri url = Uri.https(
-        global.baseUrl,
-        global.project + global.wsUrl + "ws/buscar",
-        {"c": idCategoria, "sc": idSubCategoria});
+    Uri url =
+        Uri.https(global.baseUrl, global.project + global.wsUrl + "ws/buscar", {
+      "c": idCategoria,
+      "sc": idSubCategoria,
+      "lat": global.latMovil,
+      "long": global.longMovil,
+      "localidad": localidad,
+    });
     await http
         .get(url, headers: {"Accept": "application/json"}).then((respuesta) {
       String body = utf8.decode(respuesta.bodyBytes);
@@ -367,24 +390,27 @@ class _InicioState extends State<Inicio> {
           },
         ),
         const TextField(
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
           hintText: "Nombre",
         )),
         const TextField(decoration: InputDecoration(hintText: "Apellido")),
-        const TextField(decoration: const InputDecoration(hintText: "Cod cel")),
+        const TextField(decoration: InputDecoration(hintText: "Cod cel")),
         const TextField(
+            decoration: InputDecoration(
+                hintText: "Numero de celular", icon: Icon(Icons.numbers))),
+        TextField(
+            enabled: true,
+            controller: _emailController,
             decoration: const InputDecoration(
-                hintText: "Numero de celular",
-                icon: const Icon(Icons.numbers))),
+                hintText: "Correo electronico", icon: Icon(Icons.email))),
         const TextField(
-            decoration: const InputDecoration(
-                hintText: "Correo electronico", icon: const Icon(Icons.email))),
+            obscureText: true,
+            decoration:
+                InputDecoration(hintText: "Clave", icon: Icon(Icons.lock))),
         const TextField(
-            decoration: const InputDecoration(
-                hintText: "Clave", icon: const Icon(Icons.lock))),
-        const TextField(
-          decoration: const InputDecoration(
-              hintText: "Confirmar clave", icon: const Icon(Icons.lock)),
+          obscureText: true,
+          decoration: InputDecoration(
+              hintText: "Confirmar clave", icon: Icon(Icons.lock)),
         ),
       ],
     );
@@ -392,7 +418,7 @@ class _InicioState extends State<Inicio> {
       onPressed: () => Navigator.pop(context),
       child: const Text(
         "Cancelar",
-        style: const TextStyle(color: Colors.white, fontSize: 20),
+        style: TextStyle(color: Colors.white, fontSize: 20),
       ),
     );
     DialogButton accionBoton = DialogButton(
@@ -405,19 +431,22 @@ class _InicioState extends State<Inicio> {
 
     if (tipo == "L") {
       accionBoton = DialogButton(
-        onPressed: () => Navigator.pop(context),
+        onPressed: iniciarSesion,
         child: const Text(
           "Iniciar sesion",
           style: TextStyle(color: Colors.white, fontSize: 20),
         ),
       );
       contenido = Column(
+        // ignore: prefer_const_literals_to_create_immutables
         children: [
-          const TextField(
+          TextField(
+              controller: _emailController,
               decoration: const InputDecoration(
-                  hintText: "Correo electronico",
-                  icon: const Icon(Icons.email))),
-          const TextField(
+                  hintText: "Correo electronico", icon: Icon(Icons.email))),
+          TextField(
+              obscureText: true,
+              controller: _claveController,
               decoration: const InputDecoration(
                   hintText: "Clave", icon: Icon(Icons.lock))),
         ],
@@ -429,5 +458,73 @@ class _InicioState extends State<Inicio> {
         title: titulo,
         content: contenido,
         buttons: [accionBoton, cancelar]);
+  }
+
+  void iniciarSesion() async {
+    await webService.WebService()
+        .iniciarSesion(_emailController.text, _claveController.text)
+        .then((String value) {
+      if (value == "Ok") {
+        cargarDatosUsuario();
+        Navigator.pop(context);
+      }
+    });
+  }
+
+  cargarDatosUsuario() async {
+    SharedPreferencesService().getLogin().then((Datos? value) {
+      if (value!.idUsuario != null) {
+        setState(() {
+          _login = true;
+          global.logeado = true;
+          global.datosUsuario =
+              value; // Cargo los datos del usuario en la variable global
+        });
+      }
+    });
+  }
+
+  Future<void> cerrarSesion() async {
+    SharedPreferencesService().cerrarSesion().then((bool result) {
+      if (result) {
+        setState(() {
+          _login = false;
+          global.logeado = false;
+          global.datosUsuario =
+              null; // Cargo los datos del usuario en la variable global
+        });
+      }
+    });
+  }
+
+  Widget? menuLateral() {
+    if (global.logeado) {
+      return Drawer(
+        child: Column(
+          children: <Widget>[
+            UserAccountsDrawerHeader(
+              accountName: Text(global.datosUsuario!.nombre.toString()),
+              accountEmail: Text(
+                  global.datosUsuario!.correo.toString() +
+                      " - " +
+                      global.datosUsuario!.nivelUsuario.toString(),
+                  maxLines: 2),
+            ),
+            Container(
+              height: MediaQuery.of(context).size.height / 1.4,
+              child: listadoMenu(context),
+            ),
+            RaisedButton.icon(
+                padding: const EdgeInsets.fromLTRB(50, 0, 50, 0),
+                onPressed: cerrarSesion,
+                icon: const Icon(Icons.door_back_door),
+                label: const Text("Cerrar sesion",
+                    style: TextStyle(color: Colors.white, fontSize: 21)))
+          ],
+        ),
+      );
+    } else {
+      return null;
+    }
   }
 }
