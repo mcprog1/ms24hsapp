@@ -17,6 +17,7 @@ String imgUrl = "/storage/app/";
 /** Version APP */
 var vApp = "1.0";
 var vAppWeb = "1.0";
+var usaWs = "N";
 
 /** Colores */
 Color fondoGris = Color.fromARGB(72, 222, 217, 217);

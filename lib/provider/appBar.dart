@@ -33,14 +33,24 @@ Widget? listadoMenu(BuildContext context) {
           "Agenda",
         ),
         onTap: () async {
-          await WebService().obtenerAgenda().then((AgendaWs value) {
+          if (global.usaWs == "S") {
+            await WebService().obtenerAgenda().then((AgendaWs value) {
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (context) => Agenda(
+                            agendaList: value,
+                          )),
+                  (route) => false);
+            });
+          } else {
+            AgendaWs agenda = AgendaWs();
             Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                     builder: (context) => Agenda(
-                          agendaList: value,
+                          agendaList: agenda,
                         )),
                 (route) => false);
-          });
+          }
         },
       ),
       ListTile(

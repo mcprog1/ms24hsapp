@@ -65,22 +65,24 @@ class MyApp extends StatelessWidget {
         urlImagen: "",
         tipoCategoria: 0,
         vigente: ""));
-    Uri url = Uri.https(
-        global.baseUrl, global.project + global.wsUrl + "ws/categoria/obtener");
-    await http
-        .get(url, headers: {"Accept": "application/json"}).then((respuesta) {
-      String body = utf8.decode(respuesta.bodyBytes);
-      var datos = jsonDecode(body);
-      for (var item in datos["categorias"]) {
-        data.add(Categorias(
-            idCategoria: item["idCategoria"],
-            nombreCategoria: item["nombreCategoria"],
-            urlImagen: item["urlImagen"],
-            tipoCategoria: item["tipoCategoria"],
-            vigente: item["vigente"]));
-      }
-      return data;
-    });
+    if (global.usaWs == "S") {
+      Uri url = Uri.https(global.baseUrl,
+          global.project + global.wsUrl + "ws/categoria/obtener");
+      await http
+          .get(url, headers: {"Accept": "application/json"}).then((respuesta) {
+        String body = utf8.decode(respuesta.bodyBytes);
+        var datos = jsonDecode(body);
+        for (var item in datos["categorias"]) {
+          data.add(Categorias(
+              idCategoria: item["idCategoria"],
+              nombreCategoria: item["nombreCategoria"],
+              urlImagen: item["urlImagen"],
+              tipoCategoria: item["tipoCategoria"],
+              vigente: item["vigente"]));
+        }
+        return data;
+      });
+    }
     return data;
   }
 
@@ -91,21 +93,23 @@ class MyApp extends StatelessWidget {
         subcatId: 0,
         subcatNombre: "Seleccione una sub categorias",
         subcatVigente: ""));
-    Uri url = Uri.https(
-        global.baseUrl,
-        global.project + global.wsUrl + "ws/subCategoria/obtener",
-        {"idCategoria": categoria.idCategoria.toString()});
-    await http
-        .get(url, headers: {"Accept": "application/json"}).then((respuesta) {
-      String body = utf8.decode(respuesta.bodyBytes);
-      var datos = jsonDecode(body);
-      for (var item in datos) {
-        data.add(SubCategorias(
-            subcatId: item["subcat_id"],
-            subcatCatId: item["subcat_cat_id"],
-            subcatNombre: item["subcat_nombre"]));
-      }
-    });
+    if (global.usaWs == "S") {
+      Uri url = Uri.https(
+          global.baseUrl,
+          global.project + global.wsUrl + "ws/subCategoria/obtener",
+          {"idCategoria": categoria.idCategoria.toString()});
+      await http
+          .get(url, headers: {"Accept": "application/json"}).then((respuesta) {
+        String body = utf8.decode(respuesta.bodyBytes);
+        var datos = jsonDecode(body);
+        for (var item in datos) {
+          data.add(SubCategorias(
+              subcatId: item["subcat_id"],
+              subcatCatId: item["subcat_cat_id"],
+              subcatNombre: item["subcat_nombre"]));
+        }
+      });
+    }
     return data;
   }
 }

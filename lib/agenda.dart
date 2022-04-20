@@ -19,6 +19,8 @@ class Agenda extends StatefulWidget {
 }
 
 class _AgendaState extends State<Agenda> {
+  String dia = "Lunes";
+
   @override
   void initState() {
     // TODO: implement initState
@@ -32,7 +34,69 @@ class _AgendaState extends State<Agenda> {
       drawer: menuLateral(),
       // ignore: avoid_unnecessary_containers
       body: Container(
-        child: Column(),
+        child: Column(
+          children: [
+            RaisedButton(onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Dia disponible'),
+                      content: SingleChildScrollView(
+                        child: ListBody(
+                          children: <Widget>[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              margin: const EdgeInsets.only(
+                                  bottom: 10, top: 10, left: 10, right: 10),
+                              child: DropdownButton(
+                                  value: dia,
+                                  underline: Container(
+                                    height: 2,
+                                    color: Colors.deepPurpleAccent,
+                                  ),
+                                  alignment: Alignment.center,
+                                  items: <String>[
+                                    'Lunes',
+                                    'Martes',
+                                    'Miercoles',
+                                    'Jueves'
+                                  ].map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? value) {
+                                    setState(() {
+                                      dia = value!;
+                                    });
+                                  }),
+                            ),
+                          ],
+                        ),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          child: const Text('Cancelar'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        TextButton(
+                          child: const Text('Aceptar'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  });
+            })
+          ],
+        ),
       ),
     );
   }
