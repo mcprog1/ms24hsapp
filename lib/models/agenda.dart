@@ -1,4 +1,27 @@
 class AgendaWs {
+  List<DatosAgenda>? datosAgenda;
+
+  AgendaWs({this.datosAgenda});
+
+  AgendaWs.fromJson(Map<String, dynamic> json) {
+    if (json['datosAgenda'] != null) {
+      datosAgenda = <DatosAgenda>[];
+      json['datosAgenda'].forEach((v) {
+        datosAgenda!.add(new DatosAgenda.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.datosAgenda != null) {
+      data['datosAgenda'] = this.datosAgenda!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class DatosAgenda {
   int? idAgenda;
   int? iDia;
   String? dia;
@@ -8,7 +31,7 @@ class AgendaWs {
   String? hasta;
   String? vigente;
 
-  AgendaWs(
+  DatosAgenda(
       {this.idAgenda,
       this.iDia,
       this.dia,
@@ -18,7 +41,7 @@ class AgendaWs {
       this.hasta,
       this.vigente});
 
-  AgendaWs.fromJson(Map<String, dynamic> json) {
+  DatosAgenda.fromJson(Map<String, dynamic> json) {
     idAgenda = json['idAgenda'];
     iDia = json['iDia'];
     dia = json['dia'];

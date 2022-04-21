@@ -6,6 +6,8 @@ import 'provider/appBar.dart';
 import 'service/sharedPreferences.dart';
 import 'service/webService.dart';
 import 'package:ms24hs/models/agenda.dart';
+import "package:ms24hs/db/dataBase.dart";
+import 'package:ms24hs/models/valores.dart';
 
 class Agenda extends StatefulWidget {
   final AgendaWs? agendaList;
@@ -19,12 +21,36 @@ class Agenda extends StatefulWidget {
 }
 
 class _AgendaState extends State<Agenda> {
-  String dia = "Lunes";
-
+  //String dia = "Lunes";
+  DB db = new DB(); // Instancio la base de datos
+  List<DatosVl> dias = [];
+  List<DatosVl> horas = [];
+  DatosVl dia = DatosVl();
+  DatosVl desde = DatosVl();
+  DatosVl hasta = DatosVl();
   @override
   void initState() {
     // TODO: implement initState
+    obtenerDiasHoras();
     super.initState();
+  }
+
+  Future<void> obtenerDiasHoras() async {
+    List<DatosVl> datosTemp = await db.getDias();
+    List<DatosVl> datosHorasTemp = await db.getHoras();
+    setState(() {
+      dias = datosTemp;
+      dia = datosTemp[0];
+      horas = datosHorasTemp;
+      desde = datosHorasTemp[0];
+      hasta = datosHorasTemp[0];
+    });
+    print(dias[0]);
+    print(dias.length);
+    print(horas[0]);
+    print(horas.length);
+    print(desde);
+    print(hasta);
   }
 
   @override
@@ -57,21 +83,66 @@ class _AgendaState extends State<Agenda> {
                                     color: Colors.deepPurpleAccent,
                                   ),
                                   alignment: Alignment.center,
-                                  items: <String>[
-                                    'Lunes',
-                                    'Martes',
-                                    'Miercoles',
-                                    'Jueves'
-                                  ].map<DropdownMenuItem<String>>(
-                                      (String value) {
-                                    return DropdownMenuItem<String>(
+                                  items: dias.map<DropdownMenuItem<DatosVl>>(
+                                      (DatosVl value) {
+                                    return DropdownMenuItem<DatosVl>(
                                       value: value,
-                                      child: Text(value),
+                                      child: Text(value.vlNombre.toString()),
                                     );
                                   }).toList(),
-                                  onChanged: (String? value) {
+                                  onChanged: (DatosVl? value) {
                                     setState(() {
                                       dia = value!;
+                                    });
+                                  }),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              margin: const EdgeInsets.only(
+                                  bottom: 10, top: 10, left: 10, right: 10),
+                              child: DropdownButton(
+                                  value: desde,
+                                  underline: Container(
+                                    height: 2,
+                                    color: Colors.deepPurpleAccent,
+                                  ),
+                                  alignment: Alignment.center,
+                                  items: horas.map<DropdownMenuItem<DatosVl>>(
+                                      (DatosVl value) {
+                                    return DropdownMenuItem<DatosVl>(
+                                      value: value,
+                                      child: Text(value.vlNombre.toString()),
+                                    );
+                                  }).toList(),
+                                  onChanged: (DatosVl? value) {
+                                    setState(() {
+                                      desde = value!;
+                                    });
+                                  }),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              margin: const EdgeInsets.only(
+                                  bottom: 10, top: 10, left: 10, right: 10),
+                              child: DropdownButton(
+                                  value: hasta,
+                                  underline: Container(
+                                    height: 2,
+                                    color: Colors.deepPurpleAccent,
+                                  ),
+                                  alignment: Alignment.center,
+                                  items: horas.map<DropdownMenuItem<DatosVl>>(
+                                      (DatosVl value) {
+                                    return DropdownMenuItem<DatosVl>(
+                                      value: value,
+                                      child: Text(value.vlNombre.toString()),
+                                    );
+                                  }).toList(),
+                                  onChanged: (DatosVl? value) {
+                                    setState(() {
+                                      hasta = value!;
                                     });
                                   }),
                             ),
