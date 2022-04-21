@@ -10,6 +10,8 @@ import 'package:ms24hs/service/sharedPreferences.dart';
 /** MODELOS */
 import "package:ms24hs/models/usuario.dart";
 import 'package:ms24hs/models/agenda.dart';
+import 'package:ms24hs/models/tipo.dart';
+import 'package:ms24hs/models/valores.dart';
 
 class WebService {
   final client = Client();
@@ -46,5 +48,12 @@ class WebService {
     agenda = AgendaWs.fromJson(jsonDecode(bodyByte));
     return agenda;
   }
-  
+
+  Future<Tipo> obtenerTipos() async {
+    return null;
+  }
+
+  Future<Valores> obtenerValores() async {
+    return null;
+  }
 }
