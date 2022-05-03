@@ -147,7 +147,7 @@ class _InicioState extends State<Inicio> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: appBarMenu(),
+        appBar: appBarMenu(""),
         drawer: menuLateral(),
         body: Container(
           padding: const EdgeInsets.only(left: 10, right: 10),

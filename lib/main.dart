@@ -9,6 +9,7 @@ import 'provider/splashScree.dart' as splash;
 import "inicio.dart";
 import 'buscador.dart';
 import 'service/webService.dart';
+import 'package:ms24hs/db/dataBase.dart';
 
 void main() {
   runApp(const MyApp());
@@ -59,6 +60,8 @@ class MyApp extends StatelessWidget {
   }
 
   Future<List<Categorias>> obtenerCategoriaLista() async {
+    print("Se llamo la funcion obtenerCategoriaLista");
+    DB db = DB(); // Instancio la base de datos
     await WebService().cargarTipos();
     await WebService().cargarValores();
     List<Categorias> data = [];
@@ -70,17 +73,21 @@ class MyApp extends StatelessWidget {
         vigente: ""));
     Uri url = Uri.https(
         global.baseUrl, global.project + global.wsUrl + "ws/categoria/obtener");
-    await http
-        .get(url, headers: {"Accept": "application/json"}).then((respuesta) {
+    await http.get(url, headers: {"Accept": "application/json"}).then(
+        (respuesta) async {
+      print("Entro aca");
+      await db.eliminarCategoria();
       String body = utf8.decode(respuesta.bodyBytes);
       var datos = jsonDecode(body);
       for (var item in datos["categorias"]) {
-        data.add(Categorias(
+        Categorias temp = Categorias(
             idCategoria: item["idCategoria"],
             nombreCategoria: item["nombreCategoria"],
             urlImagen: item["urlImagen"],
             tipoCategoria: item["tipoCategoria"],
-            vigente: item["vigente"]));
+            vigente: item["vigente"]);
+        await db.insertCategoria(temp);
+        data.add(temp);
       }
       return data;
     });
@@ -89,6 +96,7 @@ class MyApp extends StatelessWidget {
   }
 
   Future<List<SubCategorias>> obtenerSubCategorias(Categorias categoria) async {
+    DB db = DB(); // Instancio la base de datos
     List<SubCategorias> data = [];
     data.add(SubCategorias(
         subcatCatId: 0,
@@ -99,15 +107,18 @@ class MyApp extends StatelessWidget {
         global.baseUrl,
         global.project + global.wsUrl + "ws/subCategoria/obtener",
         {"idCategoria": categoria.idCategoria.toString()});
-    await http
-        .get(url, headers: {"Accept": "application/json"}).then((respuesta) {
+    await http.get(url, headers: {"Accept": "application/json"}).then(
+        (respuesta) async {
+      await db.eliminarSubCategoria();
       String body = utf8.decode(respuesta.bodyBytes);
       var datos = jsonDecode(body);
       for (var item in datos) {
-        data.add(SubCategorias(
+        SubCategorias temp = SubCategorias(
             subcatId: item["subcat_id"],
             subcatCatId: item["subcat_cat_id"],
-            subcatNombre: item["subcat_nombre"]));
+            subcatNombre: item["subcat_nombre"]);
+        await db.insertSubCategoria(temp);
+        data.add(temp);
       }
     });
 

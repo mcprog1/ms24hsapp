@@ -12,6 +12,7 @@ import 'package:ms24hs/db/dataBase.dart';
 import "package:ms24hs/models/usuario.dart";
 import 'package:ms24hs/models/agenda.dart';
 import 'package:ms24hs/models/tipo.dart';
+import 'package:ms24hs/models/servicios.dart';
 import 'package:ms24hs/models/valores.dart';
 
 class WebService {
@@ -111,5 +112,59 @@ class WebService {
       }
     }
     return valores;
+  }
+
+  Future<int?> guardarAgenda(int? idDia, int? idDesde, int? idHasta) async {
+    Datos? datosUsuario = global.datosUsuario;
+    int? idUsuario = datosUsuario?.idUsuario;
+    print("idUsuario ====> " + idUsuario.toString());
+    Uri request = Uri.https(global.baseUrl, urls + "agenda/guardar", {
+      "idUsuario": idUsuario.toString(),
+      "idDia": idDia.toString(),
+      "idDesde": idDesde.toString(),
+      "idHasta": idHasta.toString(),
+      "vigente": "S",
+    });
+    final response =
+        await client.post(request, headers: {"Accept": "application/json"});
+    print(response.body);
+    print(response.statusCode);
+    String bodyByte = utf8.decode(response.bodyBytes);
+    Respuesta respuesta = Respuesta.fromJson(jsonDecode(bodyByte));
+    print("Guardo agenda el codigo es ====>  " + respuesta.code.toString());
+    return respuesta.code;
+  }
+
+  Future<ServiciosWs> obtenerServicios() async {
+    print('Get Services');
+    ServiciosWs servicio;
+    Uri request = Uri.https(
+      global.baseUrl,
+      urls + "servicios/obtener",
+    );
+    final response =
+        await client.post(request, headers: {"Accept": "application/json"});
+    String bodyByte = utf8.decode(response.bodyBytes);
+    servicio = ServiciosWs.fromJson(jsonDecode(bodyByte));
+    return servicio;
+  }
+}
+
+class Respuesta {
+  int? code;
+  String? respuesta;
+
+  Respuesta({required this.code, required this.respuesta});
+
+  Respuesta.fromJson(Map<String, dynamic> json) {
+    code = json['code'];
+    respuesta = json['respuesta'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['code'] = this.code;
+    data['respuesta'] = this.respuesta;
+    return data;
   }
 }
