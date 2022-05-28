@@ -19,29 +19,26 @@ class AdressInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Container(
-            height: 40.0,
-            width: MediaQuery.of(context).size.width / 1.4,
-            alignment: Alignment.center,
-            // padding: EdgeInsets.only(left: 10.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5.0),
-            ),
-            child: TextField(
-              controller: controller,
-              enabled: enabled,
-              onTap: onTap,
-              decoration: InputDecoration(
-                hintText: hintText,
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Container(
+        height: 40.0,
+        width: MediaQuery.of(context).size.width / 1.4,
+        alignment: Alignment.center,
+        // padding: EdgeInsets.only(left: 10.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5.0),
+        ),
+        child: TextField(
+          controller: controller,
+          enabled: enabled,
+          autofocus: false,
+          onTap: onTap,
+          decoration: InputDecoration(
+            hintText: hintText,
           ),
-        )
-      ],
+        ),
+      ),
     );
   }
 }

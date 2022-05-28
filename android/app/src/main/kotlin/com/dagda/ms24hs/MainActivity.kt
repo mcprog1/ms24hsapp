@@ -1,4 +1,4 @@
-package com.example.ms24hs
+package com.dagda.ms24hs
 
 import io.flutter.embedding.android.FlutterActivity
 

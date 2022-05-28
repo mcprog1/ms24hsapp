@@ -178,4 +178,20 @@ class DB {
             urlImagen: maps[i]["urlImagen"],
             vigente: maps[i]["vigente"]));
   }
+
+  Future<List<DatosVl>> getPaises() async {
+    print("getContries");
+    await openDB();
+    final List<Map<String, dynamic>> maps =
+        await _db!.rawQuery("SELECT * FROM valores WHERE vl_tp_id = 13");
+    return List.generate(
+        maps.length,
+        (i) => DatosVl(
+            vlTpId: maps[i]["vl_tp_id"],
+            vlId: maps[i]["vl_id"],
+            vlNombre: maps[i]["vl_nombre"],
+            vlValor1: maps[i]["vl_valor"],
+            vlValor: maps[i]["vl_valor1"],
+            vlVigente: maps[i]["vl_vigente"]));
+  }
 }

@@ -31,6 +31,9 @@ class Datosservicios {
   String? subCategoria;
   String? urlImagen;
   String? descripcionServicio;
+  int? idCategoria;
+  int? idSubCategoria;
+  int? idPais;
 
   Datosservicios(
       {this.id,
@@ -40,7 +43,10 @@ class Datosservicios {
       this.categoria,
       this.subCategoria,
       this.urlImagen,
-      this.descripcionServicio});
+      this.descripcionServicio,
+      this.idCategoria,
+      this.idPais,
+      this.idSubCategoria});
 
   Datosservicios.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -51,6 +57,9 @@ class Datosservicios {
     subCategoria = json['subCategoria'];
     urlImagen = json['urlImagen'];
     descripcionServicio = json['descripcionServicio'];
+    idCategoria = json['idCategoria'];
+    idSubCategoria = json['idSubCategoria'];
+    idPais = json['idPais'];
   }
 
   Map<String, dynamic> toJson() {
@@ -63,6 +72,9 @@ class Datosservicios {
     data['subCategoria'] = this.subCategoria;
     data['urlImagen'] = this.urlImagen;
     data['descripcionServicio'] = this.descripcionServicio;
+    data['idCategoria'] = this.idCategoria;
+    data['idSubCategoria'] = this.idSubCategoria;
+    data['idPais'] = this.idPais;
     return data;
   }
 }

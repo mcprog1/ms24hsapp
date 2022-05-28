@@ -27,6 +27,7 @@ import 'models/usuario.dart';
 import 'service/sharedPreferences.dart';
 import 'provider/appBar.dart';
 import 'agenda.dart';
+import 'package:ms24hs/registro.dart';
 
 class Inicio extends StatefulWidget {
   final List<Categorias> categoriasLista;
@@ -55,7 +56,7 @@ class _InicioState extends State<Inicio> {
   List<SubCategorias> subCatList = [];
   bool esProf = false;
   bool _login = false;
-
+  String texto = "Usuario";
   /**Para obtener la ubicacion */
   Location location = new Location();
 
@@ -227,12 +228,16 @@ class _InicioState extends State<Inicio> {
                               padding: const EdgeInsets.only(
                                   bottom: 10, top: 10, left: 40, right: 40),
                               // ignore: prefer_const_constructors
-                              child: AdressInput(
-                                controller: _localidadController,
-                                enabled: true,
-                                hintText: "Localidad",
-                                iconData: Icons.gps_fixed,
-                                onTap: searchLoc,
+                              child: Row(
+                                children: [
+                                  AdressInput(
+                                    controller: _localidadController,
+                                    enabled: true,
+                                    hintText: "Localidad",
+                                    iconData: Icons.gps_fixed,
+                                    onTap: searchLoc,
+                                  ),
+                                ],
                               ),
                             ), //Fin del input de la localidad
                             const SizedBox(
@@ -272,15 +277,21 @@ class _InicioState extends State<Inicio> {
                     const Padding(padding: EdgeInsets.only(top: 10)),
                     ElevatedButton(
                         onPressed: () =>
-                            modalRegistroLogin(this.context, "L", esProf)
-                                .show(),
+                            modalRegistroLogin(this.context, "L").show(),
                         child: const Text("Iniciar Sesion",
                             style:
                                 TextStyle(color: Colors.white, fontSize: 21))),
                     const Padding(padding: EdgeInsets.only(top: 10)),
                     ElevatedButton(
-                      onPressed: () =>
-                          modalRegistroLogin(this.context, "R", esProf).show(),
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Registro(
+                                      categorias: widget.categoriasLista,
+                                      subCategorias: widget.subCategoriaLista,
+                                    )));
+                      },
                       child: const Text("Crear cuenta",
                           style: TextStyle(color: Colors.white, fontSize: 21)),
                       style: const ButtonStyle(),
@@ -360,7 +371,18 @@ class _InicioState extends State<Inicio> {
     return "Ok";
   }
 
-  Alert modalRegistroLogin(BuildContext context, String tipo, bool esProf) {
+  void cambiarEstado(bool value) {
+    //    setState(() {
+    esProf = value;
+//    });
+    if (esProf) {
+      texto = "Profesional";
+    } else {
+      texto = "Usuario";
+    }
+  }
+
+  Alert modalRegistroLogin(BuildContext context, String tipo) {
     String titulo = "Registro";
     if (tipo == "L") //Es login
     {
@@ -375,17 +397,17 @@ class _InicioState extends State<Inicio> {
         ],
        */
       children: [
-        FlutterSwitch(
-          activeText: "All Good. Negative.",
-          inactiveText: "Under Quarantine.",
+        SwitchListTile(
+          secondary: Icon(
+            Icons.notifications,
+            color: Colors.white,
+          ),
+          title: Text(
+              'Notification'), // just a custom font, otherwise a regular Text widget
           value: esProf,
-          valueFontSize: 10.0,
-          width: 110,
-          borderRadius: 30.0,
-          showOnOff: true,
-          onToggle: (val) {
+          onChanged: (bool value) {
             setState(() {
-              esProf = val;
+              cambiarEstado(value);
             });
           },
         ),
@@ -482,6 +504,7 @@ class _InicioState extends State<Inicio> {
         });
       }
     });
+    SharedPreferencesService().setCargaDatos();
   }
 
   Future<void> cerrarSesion() async {

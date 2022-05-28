@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import "package:http/http.dart" as http;
 import 'package:ms24hs/models/subCategorias.dart';
+import 'package:ms24hs/service/sharedPreferences.dart';
 import "varglobal.dart" as global;
 import "models/categorias.dart";
 import 'provider/splashScree.dart' as splash;
@@ -62,8 +63,15 @@ class MyApp extends StatelessWidget {
   Future<List<Categorias>> obtenerCategoriaLista() async {
     print("Se llamo la funcion obtenerCategoriaLista");
     DB db = DB(); // Instancio la base de datos
-    await WebService().cargarTipos();
-    await WebService().cargarValores();
+    String cargaDato = "N";
+    await SharedPreferencesService().getCargaDatos().then((String dato) {
+      cargaDato = dato;
+    });
+    print("Cargo dato es " + cargaDato.toString());
+    if (cargaDato == "S") {
+      await WebService().cargarTipos();
+      await WebService().cargarValores();
+    }
     List<Categorias> data = [];
     data.add(Categorias(
         idCategoria: 0,

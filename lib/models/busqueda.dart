@@ -35,6 +35,7 @@ class DatosBusqueda {
   String? servicioLong;
   String? nombreProfesional;
   String? urlImagen;
+  String? contacto;
 
   DatosBusqueda(
       {this.idServicio,
@@ -45,7 +46,8 @@ class DatosBusqueda {
       this.servicioLat,
       this.servicioLong,
       this.nombreProfesional,
-      this.urlImagen});
+      this.urlImagen,
+      this.contacto});
 
   DatosBusqueda.fromJson(Map<String, dynamic> json) {
     idServicio = json['idServicio'];
@@ -57,6 +59,7 @@ class DatosBusqueda {
     servicioLong = json['servicioLong'];
     nombreProfesional = json['nombreProfesional'];
     urlImagen = json['urlImagen'];
+    contacto = json['contacto'];
   }
 
   Map<String, dynamic> toJson() {
@@ -70,6 +73,7 @@ class DatosBusqueda {
     data['servicioLong'] = this.servicioLong;
     data['nombreProfesional'] = this.nombreProfesional;
     data['urlImagen'] = this.urlImagen;
+    data['contacto'] = this.contacto;
     return data;
   }
 }

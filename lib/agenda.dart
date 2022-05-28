@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'varglobal.dart' as global;
 import 'provider/appBar.dart';
@@ -57,6 +57,13 @@ class _AgendaState extends State<Agenda> {
   Future<void> obtenerDiasHoras() async {
     List<DatosVl> datosTemp = await db.getDias();
     List<DatosVl> datosHorasTemp = await db.getHoras();
+    print(
+        "/-------------------------------------------------------------------------/");
+    datosTemp.forEach((DatosVl d) {
+      print(" ----> " + d.vlId.toString() + "," + d.vlNombre.toString());
+    });
+    print(
+        "/-------------------------------------------------------------------------/");
     setState(() {
       dias = datosTemp;
       dia = datosTemp[0];

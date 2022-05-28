@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.ms24hs">
+    package="com.dagda.ms24hs">
    <application
-        android:label="ms24hs"
+        android:label="S.O.S MS24HS"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -33,7 +33,7 @@
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCSRyd6_fhcAKO0-WocoGv_G7Wq0AJxBCc"/>  
     </application>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 </manifest>

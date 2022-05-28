@@ -81,7 +81,7 @@ class PlaceApiProvider {
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
       if (result['status'] == 'OK') {
-        loc = result['plus_code']["compound_code"];
+        loc = result['results'][5]["formatted_address"];
         return loc;
       }
       if (result['status'] == 'ZERO_RESULTS') {

@@ -4,6 +4,10 @@ import 'package:flutter/cupertino.dart';
 class PantallaCarga {
   static Future<void> cargandoDatos(
       BuildContext context, GlobalKey _key, String? mensaje) async {
+    String msg = "Cargando datos...";
+    if (mensaje!.isNotEmpty) {
+      msg = mensaje;
+    }
     return showDialog<void>(
         context: context,
         barrierDismissible: true,
@@ -17,10 +21,10 @@ class PantallaCarga {
               child: Wrap(
                 // ignore: prefer_const_literals_to_create_immutables
                 children: [
-                  const Center(
+                  Center(
                     child: Padding(
                       padding: EdgeInsets.only(bottom: 20),
-                      child: Text("Cargando datos...",
+                      child: Text(msg,
                           style: TextStyle(color: Colors.white, fontSize: 20)),
                     ),
                   ),

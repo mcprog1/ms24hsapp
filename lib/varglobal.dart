@@ -5,8 +5,8 @@ import 'models/usuario.dart';
 
 /** BASE URL */
 String baseUrl = "ms24hs.com";
-String project = "/desa"; //Desa
-//String project = "/prod"; //Prod
+//String project = "/desa"; //Desa
+String project = "/prod"; //Prod
 
 /** URL  WS */
 String wsUrl = "/public/";
